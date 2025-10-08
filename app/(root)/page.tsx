@@ -3,7 +3,7 @@ import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import InterviewCard from "@/components/InterviewCard";
-
+import { dummyInterviews } from "@/constants";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import {
   getInterviewsByUserId,
@@ -13,9 +13,10 @@ import {
 async function Home() {
   const user = await getCurrentUser();
 
+  // Only call functions if user and user.id exist
   const [userInterviews, allInterview] = await Promise.all([
-    getInterviewsByUserId(user?.id!),
-    getLatestInterviews({ userId: user?.id! }),
+    user?.id ? getInterviewsByUserId(user.id) : Promise.resolve(null),
+    user?.id ? getLatestInterviews({ userId: user.id }) : Promise.resolve(null),
   ]);
 
   const hasPastInterviews = userInterviews?.length! > 0;
@@ -48,6 +49,9 @@ async function Home() {
         <h2>Your Interviews</h2>
 
         <div className="interviews-section">
+          {dummyInterviews.map((interview) => (
+            <InterviewCard {...interview} key={interview.id}/>
+          ))}
           {hasPastInterviews ? (
             userInterviews?.map((interview) => (
               <InterviewCard
@@ -60,8 +64,10 @@ async function Home() {
                 createdAt={interview.createdAt}
               />
             ))
-          ) : (
-            <p>You haven&apos;t taken any interviews yet</p>
+          ) : 
+          (
+            /* <p>You haven&apos;t taken any interviews yet</p> */
+            null
           )}
         </div>
       </section>
@@ -70,6 +76,9 @@ async function Home() {
         <h2>Take Interviews</h2>
 
         <div className="interviews-section">
+          {dummyInterviews.map((interview) => (
+            <InterviewCard {...interview} key={interview.id}/>
+          ))}
           {hasUpcomingInterviews ? (
             allInterview?.map((interview) => (
               <InterviewCard
@@ -83,7 +92,8 @@ async function Home() {
               />
             ))
           ) : (
-            <p>There are no interviews available</p>
+            //<p>There are no interviews available</p>
+            null
           )}
         </div>
       </section>

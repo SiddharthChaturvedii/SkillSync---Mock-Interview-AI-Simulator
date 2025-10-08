@@ -102,7 +102,7 @@ export async function getCurrentUser(): Promise<User | null> {
 
   const sessionCookie = cookieStore.get("session")?.value;
   if (!sessionCookie) return null;
-
+    
   try {
     const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
 

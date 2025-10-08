@@ -9,8 +9,15 @@ import { feedbackSchema } from "@/constants";
 export async function createFeedback(params: CreateFeedbackParams) {
   const { interviewId, userId, transcript, feedbackId } = params;
 
+  // Add validation for required parameters
+  if (!interviewId || !userId) {
+    console.error("interviewId and userId are required for createFeedback");
+    return { success: false, error: "Missing required parameters" };
+  }
+
   try {
-    const formattedTranscript = transcript
+    // Simple fix: Use optional chaining and provide default
+    const formattedTranscript = (transcript || [])
       .map(
         (sentence: { role: string; content: string }) =>
           `- ${sentence.role}: ${sentence.content}\n`
@@ -62,11 +69,17 @@ export async function createFeedback(params: CreateFeedbackParams) {
     return { success: true, feedbackId: feedbackRef.id };
   } catch (error) {
     console.error("Error saving feedback:", error);
-    return { success: false };
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }
 
 export async function getInterviewById(id: string): Promise<Interview | null> {
+  // Add validation for id parameter
+  if (!id) {
+    console.error("id is required for getInterviewById");
+    return null;
+  }
+
   const interview = await db.collection("interviews").doc(id).get();
 
   return interview.data() as Interview | null;
@@ -76,6 +89,12 @@ export async function getFeedbackByInterviewId(
   params: GetFeedbackByInterviewIdParams
 ): Promise<Feedback | null> {
   const { interviewId, userId } = params;
+
+  // Add validation for required parameters
+  if (!interviewId || !userId) {
+    console.error("interviewId and userId are required for getFeedbackByInterviewId");
+    return null;
+  }
 
   const querySnapshot = await db
     .collection("feedback")
@@ -95,6 +114,12 @@ export async function getLatestInterviews(
 ): Promise<Interview[] | null> {
   const { userId, limit = 20 } = params;
 
+  // Add validation for userId
+  if (!userId) {
+    console.error("userId is required for getLatestInterviews");
+    return null;
+  }
+
   const interviews = await db
     .collection("interviews")
     .orderBy("createdAt", "desc")
@@ -112,6 +137,12 @@ export async function getLatestInterviews(
 export async function getInterviewsByUserId(
   userId: string
 ): Promise<Interview[] | null> {
+  // Add validation for userId
+  if (!userId) {
+    console.error("userId is required for getInterviewsByUserId");
+    return null;
+  }
+
   const interviews = await db
     .collection("interviews")
     .where("userId", "==", userId)
